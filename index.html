@@ -1,76 +1,209 @@
-<!DOCTYPE html><html lang="th">
+<!DOCTYPE html>
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panda Shop</title><style>
-body{margin:0;font-family:Arial;background:linear-gradient(135deg,#1a001f,#3a004f);color:white;text-align:center;}
-header{padding:20px;font-size:30px;color:#ff66cc;}
-.card{background:#2a0033;margin:20px;padding:25px;border-radius:15px;box-shadow:0 0 15px #ff33cc;}
-input{padding:12px;font-size:18px;width:140px;text-align:center;border-radius:10px;border:none;}
-button{padding:12px 25px;margin-top:15px;background:#ff33cc;border:none;border-radius:12px;color:white;font-weight:bold;cursor:pointer;}
-button:hover{background:#ff66dd;}
-.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;}
-.popup-box{background:#2a0033;padding:30px;border-radius:15px;box-shadow:0 0 20px #ff33cc;}
-</style></head><body><header>Panda Shop Topup</header>
-<p>กรอกจำนวนแล้วกดสั่งซื้อ</p><!-- FREE FIRE --><div class="card">
-  <h2>Free Fire</h2>
-  <input type="number" id="ff" value="33"><br>
-  <button onclick="previewOrder('Free Fire','ff')">สั่งซื้อ</button>
-</div><!-- ROV --><div class="card">
-  <h2>ROV</h2>
-  <input type="number" id="rov" value="60"><br>
-  <button onclick="previewOrder('ROV','rov')">สั่งซื้อ</button>
-</div><!-- MOBILE LEGENDS --><div class="card">
-  <h2>Mobile Legends</h2>
-  <input type="number" id="ml" value="86"><br>
-  <button onclick="previewOrder('Mobile Legends','ml')">สั่งซื้อ</button>
-</div><!-- POPUP --><div class="popup" id="popup">
-  <div class="popup-box">
-    <h3>ยืนยันคำสั่งซื้อ</h3>
-    <p id="summary"></p>
-    <button onclick="sendOrder()">ไปแชท & ส่งข้อความ</button><br>
-    <button onclick="closePopup()">ยกเลิก</button>
-  </div>
-</div><script>
-let currentMsg = "";
+<title>Panda Shop</title>
 
-function previewOrder(game,id){
-  let val = document.getElementById(id).value || 1;
-  let orderId = 'PS' + Math.floor(Math.random()*100000);
-
-  currentMsg = `รหัสออเดอร์: ${orderId}
-เกม: ${game}
-จำนวน: ${val}
-
-กรุณาแจ้ง UID และแนบสลิป`;
-
-  document.getElementById('summary').innerText = `${game} จำนวน ${val}`;
-  document.getElementById('popup').style.display = 'flex';
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background: radial-gradient(circle at top,#3a004f,#0b0010);
+  color:white;
+  text-align:center;
+  overflow-x:hidden;
 }
 
-function sendOrder(){
-  let text = encodeURIComponent(currentMsg);
+header{
+  padding:25px;
+  font-size:32px;
+  color:#ff4fd8;
+  font-weight:bold;
+  text-shadow:0 0 10px #ff4fd8;
+}
 
-  let url1 = "https://m.me/pandashop01?text=" + text;
-  let url2 = "https://www.facebook.com/messages/t/pandashop01?text=" + text;
+/* card */
+.card{
+  background:rgba(255,255,255,0.06);
+  margin:20px auto;
+  padding:20px;
+  border-radius:18px;
+  width:90%;
+  max-width:420px;
+  border:1px solid rgba(255,79,216,0.3);
+  transition:0.3s;
+  backdrop-filter: blur(6px);
+}
 
-  let win = window.open(url1, "_blank");
+.card:hover{
+  transform:scale(1.02);
+  box-shadow:0 0 20px rgba(255,79,216,0.5);
+}
+
+select,input{
+  width:90%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+  text-align:center;
+  background:#1a1a1a;
+  color:white;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  background:linear-gradient(90deg,#ff4fd8,#ff7ad9);
+  border:none;
+  border-radius:12px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 15px #ff4fd8;
+}
+
+/* hidden animation */
+.hidden{
+  display:none;
+  animation:fade 0.3s ease-in-out;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.note{
+  font-size:12px;
+  opacity:0.7;
+  margin-top:8px;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>🐼 Panda Shop</header>
+
+<div class="card">
+
+  <select id="game" onchange="changeForm()">
+    <option value="">-- เลือกเกม --</option>
+    <option value="ff">Free Fire</option>
+    <option value="rov">ROV</option>
+    <option value="ml">Mobile Legends</option>
+  </select>
+
+  <div class="note" id="hint">เลือกเกมเพื่อเริ่มสั่งซื้อ</div>
+
+  <!-- FF -->
+  <div id="ff_box" class="hidden">
+    <input type="text" id="ff_uid" placeholder="UID Free Fire">
+    <input type="number" id="ff_amount" placeholder="จำนวนเพชร">
+    <button onclick="order('Free Fire','ff_uid','ff_amount')">สั่งซื้อ</button>
+  </div>
+
+  <!-- ROV -->
+  <div id="rov_box" class="hidden">
+    <input type="text" id="rov_uid" placeholder="UID ROV">
+    <input type="number" id="rov_amount" placeholder="จำนวนคูปอง">
+    <button onclick="order('ROV','rov_uid','rov_amount')">สั่งซื้อ</button>
+  </div>
+
+  <!-- ML -->
+  <div id="ml_box" class="hidden">
+    <input type="text" id="ml_data" placeholder="UID Zone เช่น 123738 2728">
+    <input type="number" id="ml_amount" placeholder="จำนวนเพชร">
+    <button onclick="orderML()">สั่งซื้อ</button>
+  </div>
+
+</div>
+
+<script>
+
+function changeForm(){
+
+  document.querySelectorAll(".hidden").forEach(e=>e.style.display="none");
+
+  const game = document.getElementById("game").value;
+
+  let hint = document.getElementById("hint");
+
+  if(game === "ff"){
+    document.getElementById("ff_box").style.display="block";
+    hint.innerText="Free Fire → ใส่ UID + จำนวนเพชร";
+  }
+
+  if(game === "rov"){
+    document.getElementById("rov_box").style.display="block";
+    hint.innerText="ROV → ใส่ UID + จำนวนคูปอง";
+  }
+
+  if(game === "ml"){
+    document.getElementById("ml_box").style.display="block";
+    hint.innerText="Mobile Legends → UID + Zone (เช่น 123 4567)";
+  }
+}
+
+// FF + ROV
+function order(game,uidId,amountId){
+
+  const uid=document.getElementById(uidId).value;
+  const amount=document.getElementById(amountId).value||1;
+
+  if(!uid){alert("กรุณากรอก UID");return;}
+
+  sendMsg(game,uid,"-",amount);
+}
+
+// ML
+function orderML(){
+
+  const data=document.getElementById("ml_data").value.trim();
+  const amount=document.getElementById("ml_amount").value||1;
+
+  if(!data){alert("กรอก UID + Zone");return;}
+
+  const parts=data.split(" ");
+  const uid=parts[0];
+  const zone=parts[1];
+
+  sendMsg("Mobile Legends",uid,zone,amount);
+}
+
+// ส่ง
+function sendMsg(game,uid,zone,amount){
+
+  const orderId="PS"+Math.floor(Math.random()*100000);
+
+  const msg=
+`Panda Shop Order
+Order ID: ${orderId}
+Game: ${game}
+UID: ${uid}
+Zone: ${zone}
+Amount: ${amount}`;
+
+  const encoded=encodeURIComponent(msg);
+
+  window.location.href="https://m.me/pandashop01";
 
   setTimeout(()=>{
-    if(!win || win.closed){
-      window.location.href = url2;
-    }
-  }, 500);
+    window.open("https://www.facebook.com/messages/t/pandashop01?text="+encoded,"_blank");
+  },800);
+
 }
 
-function closePopup(){
-  document.getElementById('popup').style.display = 'none';
-}
-</script><!-- ปุ่มสำรอง Facebook Lite --><div style="margin:20px;">
-  <p>❗ หากกดแล้วไม่ไปแชท (ใช้ Facebook Lite)</p>
-  <a href="https://m.me/pandashop01" target="_blank" style="display:inline-block;padding:12px 20px;background:#00c853;border-radius:10px;color:white;text-decoration:none;">
-    👉 เปิดแชทโดยตรง
-  </a>
-  <p style="margin-top:10px;font-size:14px;opacity:0.8;">แนะนำ: กด ⋮ แล้วเลือก "เปิดใน Chrome"</p>
-</div></body>
-</html>
+</script>
+
+</body>
+    </html>
